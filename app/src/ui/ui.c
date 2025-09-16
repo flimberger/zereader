@@ -15,6 +15,8 @@ LOG_MODULE_REGISTER(ui, CONFIG_ZEREADER_LOG_LEVEL);
 
 LV_FONT_DECLARE(notoserif_14);
 
+extern void update_lvgl(void);
+
 const struct device *display_dev;
 
 static lv_obj_t *button_1;
@@ -181,7 +183,7 @@ static void button_4_clicked_cb(lv_event_t *e)
 	{
 		uint32_t type = LV_KEY_DOWN;
 		lv_obj_send_event(book_roller, LV_EVENT_KEY, &type);
-		lv_timer_handler();
+		update_lvgl();
 	}
 }
 
@@ -249,7 +251,7 @@ void screen_health()
 	{
 		page_ctr = 0;
 		display_blanking_on(display_dev);
-		lv_timer_handler();
+		update_lvgl();
 		display_blanking_off(display_dev);
 	}
 }
@@ -288,7 +290,7 @@ void zereader_clean_page()
 {
 	zereader_clean_logo();
 	lv_textarea_set_text(text_area, " ");
-	lv_timer_handler();
+	update_lvgl();
 	display_blanking_on(display_dev);
 	display_blanking_off(display_dev);
 }

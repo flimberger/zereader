@@ -16,6 +16,17 @@
 
 LOG_MODULE_REGISTER(main, CONFIG_ZEREADER_LOG_LEVEL);
 
+enum main_event_flags {
+	MAIN_EVENT_UPDATE_LVGL = 0x01,
+};
+
+static K_EVENT_DEFINE(main_event);
+
+void update_lvgl(void)
+{
+	k_event_post(&main_event, MAIN_EVENT_UPDATE_LVGL);
+}
+
 int main(void)
 {
 	LOG_DBG("ZEReader started! %s\n", CONFIG_BOARD_TARGET);
@@ -53,13 +64,17 @@ int main(void)
 
 	zereader_print_current_page();
 
-	lv_timer_handler();
-
+	k_timeout_t timeout = K_NO_WAIT;
 	while (1)
 	{
+		/* For now there is only a single event, used for waking up the main loop */
+		k_event_wait(&main_event, 0xFF, true, timeout);
 		uint32_t sleep_ms = lv_timer_handler();
-
-		k_msleep(MIN(sleep_ms, INT32_MAX));
+		if (sleep_ms == LV_NO_TIMER_READY) {
+			timeout = K_FOREVER;
+		} else {
+			timeout = K_MSEC(MIN(sleep_ms, INT32_MAX));
+		}
 	}
 
 	return 0;
